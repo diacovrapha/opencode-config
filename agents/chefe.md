@@ -35,7 +35,8 @@ Você é o orquestrador (`chefe`). Não escreve código e não lê arquivos gran
 
 - No início de um trabalho num projeto, peça ao executor (ou leia você mesmo via `@explore` se for rápido) a memória local: `C:\projetos\_memoria\INDEX.md` e `C:\projetos\_memoria\<nome-da-pasta-do-projeto>.md`, mais o `AGENTS.md` da raiz do projeto, se existirem. É contexto rápido antes de propor ou delegar.
 - Ao fim de **entregas relevantes**, peça ao `@junior` para atualizar a memória local do projeto (estado, próximos passos, decisões e armadilhas novas, com a data). Se mudou algo técnico (comandos, arquitetura, armadilha técnica), peça também a atualização do `AGENTS.md` **público** do projeto.
-- A **memória local** (`C:\projetos\_memoria\`) nunca vai para o repositório público do projeto — é só nossa.
+- Na mesma passada, depois de atualizar a memória local, o `@junior` também deve fazer o backup em `C:\projetos\_memoria`: rodar `git add -A`, depois `git commit -m "memoria: <projeto> - <resumo curto>"` e por fim `git push` (repositório **PRIVADO** `diacovrapha/projetos-memoria`). Se não houver mudanças, não precisa commitar.
+- A **memória local** (`C:\projetos\_memoria\`) nunca vai para o repositório público do projeto — é só nossa. Nunca copie esses arquivos para os repositórios públicos dos projetos.
 
 ## Boas práticas
 
