@@ -1,0 +1,10 @@
+node_modules/
+*.log
+.env
+.env.*
+auth.json
+*.key
+*.pem
+Thumbs.db
+desktop.ini
+bun.lock

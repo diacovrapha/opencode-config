@@ -1,0 +1,14 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "ideador",
+  "model": "anthropic/claude-sonnet-5-5",
+  "small_model": "minimax-coding-plan/MiniMax-M2.7-highspeed",
+  "agent": {
+    "general": {
+      "model": "minimax-coding-plan/MiniMax-M3"
+    },
+    "explore": {
+      "model": "minimax-coding-plan/MiniMax-M2.7-highspeed"
+    }
+  }
+}
