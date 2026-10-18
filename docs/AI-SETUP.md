@@ -4,8 +4,8 @@ Você é uma IA assistente de código. Sua tarefa é portar esta configuração 
 
 ## 0. Contexto da config que está sendo portada
 
-- `opencode.jsonc` define `default_agent`, `model`, `small_model`, e overrides para `agent.general` e `agent.explore`.
-- 7 agentes em `agents/*.md` (frontmatter YAML + corpo do prompt). Cada `.md` tem seu próprio `model`, `mode`, `permission`, etc.
+- `opencode.jsonc` define `default_agent`, `model`, `small_model`, overrides para `agent.general` e `agent.explore`, e (a partir de 1.19.3) pode liberar pastas fora do projeto com `permission.external_directory` (ex.: pasta de memória local).
+- 7 agentes em `agents/*.md` (frontmatter YAML + corpo do prompt). Cada `.md` tem seu próprio `model`, `mode`, `permission`, e opcionalmente `steps` e `variant`.
 - `plugins/hud-launcher.js` é Windows-específico e codifica caminhos locais — tratar como opcional (ver passo 7).
 - Schema de referência: https://opencode.ai/config.json (o opencode recusa iniciar com config inválida).
 
@@ -64,6 +64,14 @@ Edite o frontmatter de cada arquivo e troque o `model:`. Remova `variant: thinki
 
 Aplique as mudanças no `opencode.jsonc` original do usuário: adicione/atualize `default_agent`, `model`, `small_model`, `agent.general`, `agent.explore`. Preserve campos do usuário que não fazem parte desta config (ex.: `theme`, `provider`, `mcp`).
 
+### Protocolo de ajuda ao sênior (junior/pleno) e memória local
+
+- O `junior` e o `pleno` deste repo já vêm com permissão para chamar o `@senior` (`task: { "*": deny, senior: allow }`). Mantenha esse padrão se quiser preservar a escada de ajuda.
+- O `junior` traz `steps: 60` e o `pleno`, `steps: 100` no frontmatter (schema aceita, ver referência rápida). São limites de iterações agentic para travar loops longos. Ajuste à vontade.
+- A seção "Quando pedir ajuda ao @senior" dos prompts define gatilhos e formato curto; preserve-a se quiser manter o fluxo.
+- O `senior` ganhou um bloco "Modo mentor" — ao receber consulta de junior/pleno, responde sem implementar. Preserve a regra (não chame o senior em modo plano curto e saia implementando por conta própria).
+- **Memória local opcional.** Este repo libera a pasta `C:\projetos\_memoria\` (exemplo Windows) via `permission.external_directory: { "C:/projetos/_memoria/**": "allow" }`. Se o usuário não usa essa pasta, remova o bloco; se usa em outro caminho, troque o glob. Os prompts do `ideador` e do `chefe` leem `INDEX.md` e `<projeto>.md` sob demanda, e o chefe pede ao `@junior` para atualizar a memória local no fim de entregas relevantes. A pasta **nunca** vai para o repositório público do projeto.
+
 ## 7. Plugin `hud-launcher.js`
 
 **Copie só se o usuário usa Windows e quer o [opencode HUD](https://github.com/diacovrapha/opencode-hud)** (app desktop de gastos). O plugin procura o executável instalado (`%LOCALAPPDATA%\opencode HUD\opencode-hud.exe` ou `%ProgramFiles%\opencode HUD\opencode-hud.exe`) e o abre com `--background`; se não achar, não faz nada. É defensivo (try/catch, no-op fora do Windows, sem bloquear a inicialização).
@@ -93,11 +101,13 @@ O opencode recarrega a config ao iniciar. Diga ao usuário para sair e abrir de 
 
 ### Bloco `permission`
 
-- Uma chave por ferramenta: `edit`, `bash`, `webfetch`, `websearch`, `todowrite`, `question`, `doom_loop`, `task`, `read`, `external_directory`, etc.
+- Uma chave por ferramenta: `edit`, `bash`, `webfetch`, `websearch`, `todowrite`, `question`, `doom_loop`, `task`, `read`, `external_directory`, `skill`, etc.
 - Forma simples: `bash: allow` ou `bash: deny` ou `bash: ask`.
 - Forma com padrões: `bash: { "*": deny, "git status*": allow }`. **A última regra que casa vence.**
 - `webfetch`, `websearch`, `todowrite`, `question` e `doom_loop` aceitam **só** valor simples (sem objeto de padrões).
-- `task` usa padrões **por nome de subagente**: `task: { "*": deny, explore: allow, pesquisador: allow }`.
+- `task` usa padrões **por nome de subagente**: `task: { "*": deny, explore: allow, pesquisador: allow, senior: allow }`.
+- `external_directory` aceita padrões de caminho (glob) para liberar pastas fora do projeto: `external_directory: { "C:/projetos/_memoria/**": "allow" }`. Use com parcimônia e apenas para pastas suas.
+- O bloco `permission` global (no `opencode.jsonc`) é herdado pelos agentes; cada agente mescla o seu próprio por cima. Última regra que casa vence.
 
 ### `task` chama subagentes
 

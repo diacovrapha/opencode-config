@@ -51,10 +51,23 @@ Valores lidos diretamente de `opencode.jsonc` e `agents/*.md`.
 | `chefe` | primary | `anthropic/claude-sonnet-5-5` | Orquestrador a partir do BRIEF. Não lê arquivos grandes. | `edit: deny`, `bash: { "*": deny, "git status*": allow, "git log*": allow, "git diff*": allow }`, `webfetch: deny`, `task: allow` |
 | `senior` | subagent | `anthropic/claude-opus-5-5` | Arquitetura, bugs difíceis, planos, revisão de segurança de ferramentas de terceiros. | `edit: allow`, `bash: allow`, `task: { "*": deny, explore: allow }` |
 | `qa` | subagent | `anthropic/claude-sonnet-5-5` | Revisão contra critérios de aceite. Não corrige produção. | `edit` apenas em `**/test_*`, `**/*_test.*`, `**/*.test.*`, `**/*.spec.*`, `**/tests/**`, `**/test/**`, `**/__tests__/**`; `bash: allow`; `task: deny` |
-| `pleno` | subagent | `minimax-coding-plan/MiniMax-M3` (variant: `thinking`) | Features médias, refatorações e implementação dos planos do senior. Padrão para código. | `edit: allow`, `bash: allow`, `task: { "*": deny, explore: allow }` |
-| `junior` | subagent | `minimax-coding-plan/MiniMax-M2.7-highspeed` | Tarefas simples e bem definidas. Sem expansão de escopo. | `edit: allow`, `bash: allow`, `task: deny` |
+| `pleno` | subagent | `minimax-coding-plan/MiniMax-M3` (variant: `thinking`) | Features médias, refatorações e implementação dos planos do senior. Padrão para código. | `edit: allow`, `bash: allow`, `task: { "*": deny, explore: allow, senior: allow }` |
+| `junior` | subagent | `minimax-coding-plan/MiniMax-M2.7-highspeed` | Tarefas simples e bem definidas. Sem expansão de escopo. | `edit: allow`, `bash: allow`, `task: { "*": deny, senior: allow }` |
 | `pesquisador` | subagent | `minimax-coding-plan/MiniMax-M3` | Pesquisa externa (GitHub via `gh`, Reddit, HN, docs). Não instala nada. | `edit: deny`, `webfetch: allow`, `bash: { "*": deny, "gh search *": allow, "gh repo view *": allow, "gh release list *": allow, "gh release view *": allow, "gh api *": ask }`, `task: deny` |
 | `explore` (built-in) | subagent | `minimax-coding-plan/MiniMax-M2.7-highspeed` | Busca/exploração read-only no codebase. | read-only (built-in do opencode) |
+
+Cada agente também tem um limite de `steps` no frontmatter — `junior: 60`, `pleno: 100` — para travar loops longos e forçar reporte em vez de improviso.
+
+### Protocolo de ajuda ao sênior e checkpoints
+
+- `@junior` e `@pleno` **podem consultar o `@senior` sozinhos**, até **2 vezes por tarefa**. Na terceira dificuldade, **PARE** e reporte ao chefe. Formato do pedido: Objetivo · O que já fiz · O que tentei · Erro exato · Hipótese · Pergunta (≤ ~30 linhas).
+- **Gatilhos:** mesmo erro após 2 tentativas; comando que trava/estoura timeout; ~15 passos sem progresso; dúvida de arquitetura/onde mexer; escopo maior do que o esperado.
+- **Checkpoints:** para tarefas longas ou arriscadas, o chefe pede **"com checkpoints"** no prompt; o executor então envia ao `@senior` um resumo curto no fim de cada etapa e segue a direção dada. O `@senior` responde em modo mentor (~15 linhas: Diagnóstico · Próximos passos · Não faça · Critério de pronto), **sem implementar**.
+- **Regras anti-trava** (junior/pleno): nunca rodar em primeiro plano comandos que não terminam (`npm run dev`, `vite`, `tauri dev`, watchers, apps GUI); usar timeouts e `Invoke-CimMethod Win32_Process Create` no Windows. Prefira comandos que terminam (`build`, `test`, `typecheck`, `lint`).
+
+### Memória local de projetos (opcional)
+
+`opencode.jsonc` libera acesso à pasta `C:\projetos\_memoria\` (`permission.external_directory: { "C:/projetos/_memoria/**": "allow" }`). No início de um trabalho o `ideador` ou o `chefe` lê (se existirem) `C:\projetos\_memoria\INDEX.md` e `C:\projetos\_memoria\<nome-da-pasta-do-projeto>.md`, mais o `AGENTS.md` da raiz do projeto — contexto rápido antes de propor ou delegar. O chefe pede ao `@junior` para atualizar a memória local no fim de entregas relevantes (estado, próximos passos, decisões e armadilhas, com data); se algo técnico mudou, também atualizar o `AGENTS.md` **público**. **A pasta `_memoria` nunca vai para o repositório público do projeto.** O caminho é adaptável — se você mover a pasta, ajuste a permissão no `opencode.jsonc`.
 
 ## Princípios de economia de tokens
 
@@ -170,6 +183,8 @@ Cada "slot" da tabela abaixo tem um papel claro. Antes de trocar, confirme que o
 | `qa` | Forte em **revisão/diff** | Claude Sonnet ou similar. |
 | `pleno`, `pesquisador` | Bom em código e tool calling; idealmente **barato ou de assinatura**; contexto grande | Anthropic, MiniMax Coding Plan, GPT com cache, Gemini com contexto grande, etc. |
 | `junior`, `explore` (built-in) | **Rápido e barato** | Variante "highspeed" do Coding Plan, Haiku, Flash, Mini, etc. |
+
+**Limite de `steps` (frontmatter do `agents/*.md`):** schema aceita `steps: N` (`N` inteiro > 0) — máximo de iterações agentic antes de forçar resposta só em texto. Use para impedir loops em agentes de implementação: `junior: 60`, `pleno: 100`. Não há valor padrão para o `senior` (o limite é raramente atingido com o uso esperado — plano curto).
 
 **Onde trocar:**
 

@@ -10,5 +10,10 @@
     "explore": {
       "model": "minimax-coding-plan/MiniMax-M2.7-highspeed"
     }
+  },
+  "permission": {
+    "external_directory": {
+      "C:/projetos/_memoria/**": "allow"
+    }
   }
 }
