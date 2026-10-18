@@ -66,7 +66,7 @@ Aplique as mudanças no `opencode.jsonc` original do usuário: adicione/atualize
 
 ## 7. Plugin `hud-launcher.js`
 
-**Não copie a menos que o usuário tenha o HUD (`C:\projetos\opencode-hud\hud.pyw`) e Python em `C:\Python315\pythonw.exe`.** O plugin já é defensivo (try/catch, no-op fora do Windows, sem bloquear inicialização), mas mesmo assim só ative quando os caminhos baterem.
+**Copie só se o usuário usa Windows e quer o [opencode HUD](https://github.com/diacovrapha/opencode-hud)** (app desktop de gastos). O plugin procura o executável instalado (`%LOCALAPPDATA%\opencode HUD\opencode-hud.exe` ou `%ProgramFiles%\opencode HUD\opencode-hud.exe`) e o abre com `--background`; se não achar, não faz nada. É defensivo (try/catch, no-op fora do Windows, sem bloquear a inicialização).
 
 ## 8. CLI `gh` no `pesquisador`
 

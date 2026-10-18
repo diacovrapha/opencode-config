@@ -70,7 +70,7 @@ Valores lidos diretamente de `opencode.jsonc` e `agents/*.md`.
 - **Nenhuma ferramenta de terceiros é instalada sem aprovação do usuário e revisão do `senior`.** Mesmo quando o `pesquisador` recomenda, quem instala de fato é o `junior` ou `pleno`, e só depois do `@senior` dar veredito claro (`APROVAR` / `REPROVAR` / `APROVAR COM RESSALVAS`).
 - **Permissões restritas por agente.** Cada agente tem só as ferramentas que precisa (ver tabela acima). Por exemplo, `chefe` e `ideador` não editam arquivos; `pesquisador` não escreve nem delega; `qa` só mexe em arquivos de teste.
 - **Nenhuma credencial no repositório.** O opencode guarda credenciais em `%USERPROFILE%\.local\share\opencode\auth.json` (Windows) ou `~/.local/share/opencode/auth.json` (Linux/macOS). O `.gitignore` desta config já bloqueia `auth.json`, `.env`, `*.key` e `*.pem`.
-- **Plugin isolado.** `plugins/hud-launcher.js` é todo em try/catch, não-await, `detached`+`unref`, e só age no Windows quando `pythonw.exe` e `hud.pyw` existem. Se algo der errado, o opencode inicia normalmente.
+- **Plugin isolado.** `plugins/hud-launcher.js` é todo em try/catch, não-await, `detached`+`unref`, e só age no Windows quando o executável do [opencode HUD](https://github.com/diacovrapha/opencode-hud) existe. Se algo der errado, o opencode inicia normalmente.
 
 ## Estrutura de arquivos
 
@@ -91,7 +91,7 @@ Valores lidos diretamente de `opencode.jsonc` e `agents/*.md`.
 │   ├── qa.md                      # revisão/testes (subagent, Sonnet)
 │   └── senior.md                  # arquitetura/revisão (subagent, Opus)
 ├── plugins/
-│   └── hud-launcher.js            # abre o HUD externo no Windows (opcional)
+│   └── hud-launcher.js            # garante o opencode HUD aberto no Windows (opcional)
 └── docs/
     └── AI-SETUP.md                # guia para uma IA portar esta config para outro usuário
 ```
@@ -103,7 +103,7 @@ Valores lidos diretamente de `opencode.jsonc` e `agents/*.md`.
   - **Anthropic** (provê os modelos `claude-sonnet-5-5` e `claude-opus-5-5`).
   - **MiniMax Coding Plan** — id do provider: `minimax-coding-plan` (provê `MiniMax-M3` e `MiniMax-M2.7-highspeed`).
 - **GitHub CLI (`gh`) autenticado** — usado pelo `@pesquisador` para `gh search repos`, `gh repo view`, `gh release list/view`, `gh api`.
-- **Opcional:** Python 3.15+ instalado em `C:\Python315\pythonw.exe` **e** um projeto HUD local em `C:\projetos\opencode-hud\hud.pyw`. Se esses caminhos não existirem, o plugin `hud-launcher.js` simplesmente não faz nada. É específico desta máquina — adapte os caminhos em `plugins/hud-launcher.js` ou remova o plugin para outros usuários.
+- **Opcional:** o [opencode HUD](https://github.com/diacovrapha/opencode-hud) instalado (app desktop de gastos/uso do opencode, Windows). O plugin `hud-launcher.js` procura o executável em `%LOCALAPPDATA%\opencode HUD\` (instalador .exe), `%ProgramFiles%\opencode HUD\` (.msi) ou na build local, e o abre com `--background` (se já estiver aberto, nada acontece). Se não encontrar, não faz nada.
 
 ## Instalação
 
